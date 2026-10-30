@@ -1,0 +1,14 @@
+ALTER TABLE "AppUser"
+  ADD COLUMN IF NOT EXISTS "emailVerifiedAt" TIMESTAMP(3);
+
+UPDATE "AppUser"
+SET "emailVerifiedAt" = CURRENT_TIMESTAMP
+WHERE "emailVerifiedAt" IS NULL AND "role" <> 'CUSTOMER';
+
+CREATE TABLE IF NOT EXISTS "EmailVerification" (
+  "userId" UUID PRIMARY KEY REFERENCES "AppUser"("id") ON DELETE CASCADE,
+  "codeHash" VARCHAR(64) NOT NULL,
+  "expiresAt" TIMESTAMP(3) NOT NULL,
+  "attempts" SMALLINT NOT NULL DEFAULT 0 CHECK ("attempts" BETWEEN 0 AND 5),
+  "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
